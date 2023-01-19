@@ -1,10 +1,15 @@
 #include "freertos/FreeRTOS.h"
 #include "driver/gpio.h"
 #include "freertos/task.h"
+#include "esp_event.h"
+#include "esp_system.h"
 #include "esp_log.h"
+#include "esp_wifi.h"
+#include "nvs_flash.h"
 
 #include "Config.h"
 #include "Util.h"
+#include "WifiHelper.h"
 
 // Will hold the active state of the activity we are monitoring
 struct State
@@ -44,6 +49,18 @@ void app_main()
 }
 /////////////////////////////////////////////
 
+static void SystemEventHandler(void* arg, esp_event_base_t eventBase, int32_t id, void* data)
+{
+    if(eventBase == WIFI_EVENT || eventBase == IP_EVENT)
+    {
+        HandleWifiEvent(eventBase, id, data);
+    }
+    else
+    {
+        // Not handled
+    }
+}
+
 void SensorInterruptHandler(void* arg)
 {
     // Interrup code!
@@ -65,6 +82,33 @@ void Initialize()
 
     // Need to install this service before adding any interrupt handlers to the GPIOs
     gpio_install_isr_service(0);
+
+    // Init the NVS system
+    ESP_ERROR_CHECK(nvs_flash_init());
+
+    // Init TCP/IP stack
+    ESP_ERROR_CHECK(esp_netif_init());
+
+    // Setup event handling and register the events we care about
+    {
+        ESP_ERROR_CHECK(esp_event_loop_create_default());
+
+        // Register the event handlers we care about.. we could add more
+        esp_event_handler_instance_t wifiEventHandler;
+        ESP_ERROR_CHECK(
+            esp_event_handler_instance_register(
+                WIFI_EVENT, ESP_EVENT_ANY_ID, &SystemEventHandler, NULL, &wifiEventHandler
+            )
+        );
+        esp_event_handler_instance_t ipEventHanlder;
+        ESP_ERROR_CHECK(
+            esp_event_handler_instance_register(
+                IP_EVENT, IP_EVENT_STA_GOT_IP, &SystemEventHandler, NULL, &ipEventHanlder
+            )
+        );
+    }
+
+    InitWifiSystem();
 
     // Configure LED pin
     gpio_set_direction(k_LedPin, GPIO_MODE_OUTPUT);
