@@ -21,4 +21,7 @@ static const uint32_t k_ActivityTimeOut = 15000;
 // How often should we send activity packets to the database (if the activity is running) in ms.
 static const uint32_t k_SendPacketDelta = 3000;
 
+#define WIFI_SSID "TestNetwork"
+#define WIFI_PASSWORKD "TestPassword"
+
 #endif
