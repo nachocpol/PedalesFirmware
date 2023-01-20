@@ -18,4 +18,6 @@ uint8_t InitWifiSystem();
 
 void HandleWifiEvent(esp_event_base_t eventBase, int32_t id, void* data);
 
+uint8_t IsConnected();
+
 #endif

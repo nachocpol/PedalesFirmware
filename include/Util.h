@@ -9,4 +9,6 @@ void Delay(uint32_t ms);
 // Returns current system time in miliseconds
 uint64_t GetSystemMS();
 
+void StrToArray(const char* input, uint8_t* output, uint8_t outputMaxLen);
+
 #endif
