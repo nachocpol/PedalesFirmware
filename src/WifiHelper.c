@@ -66,6 +66,8 @@ void ConnectToAccessPoint(AccessPointInfo* info, const char* password)
         return;
     }
 
+    g_WifiHelper.m_NumRetries = 0; // Reset retries, we are about to connect
+
     uint8_t staPassword[64];
     StrToArray(password, staPassword, 64);
 
@@ -76,12 +78,8 @@ void ConnectToAccessPoint(AccessPointInfo* info, const char* password)
         },
     };
 
-    ESP_LOGI(k_LogTag, "Mode %i", (int)staConfig.sta.threshold.authmode);
-    ESP_LOGI(k_LogTag, "Password: %s", password);
-    ESP_LOGI(k_LogTag, "SSID: %s", info->m_SSID);
-
-    memcpy(staConfig.sta.ssid, info->m_SSID, 33);
-    memcpy(staConfig.sta.password, k_WifiPassword, 64);
+    memcpy(staConfig.sta.ssid, info->m_SSID, 32);
+    memcpy(staConfig.sta.password, staPassword, 64);
 
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &staConfig));
     ESP_ERROR_CHECK(esp_wifi_connect());
@@ -100,6 +98,12 @@ void HandleWifiEvent(esp_event_base_t eventBase, int32_t id, void* data)
         {
             ESP_LOGI(k_LogTag, "Wifi disconnected");
             xEventGroupClearBits(g_WifiHelper.m_WifiEventGroup, BIT0);
+            if(g_WifiHelper.m_NumRetries < k_MaxReconnectRetries)
+            {
+                g_WifiHelper.m_NumRetries++;
+                ESP_LOGI(k_LogTag, "Wifi attempting to reconnect %i/%i", g_WifiHelper.m_NumRetries, k_MaxReconnectRetries);
+                esp_wifi_connect();
+            }
         }
         else if(id == WIFI_EVENT_STA_START)
         {
@@ -116,6 +120,8 @@ void HandleWifiEvent(esp_event_base_t eventBase, int32_t id, void* data)
         {
             ip_event_got_ip_t* event = (ip_event_got_ip_t*)data;
             ESP_LOGI(k_LogTag, "Device IP:" IPSTR, IP2STR(&event->ip_info.ip));
+
+            g_WifiHelper.m_NumRetries = 0; // Reset retries in case we drop the connection
 
             // We are now connected to the station
             xEventGroupSetBits(g_WifiHelper.m_WifiEventGroup, BIT0);

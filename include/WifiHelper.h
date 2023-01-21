@@ -9,9 +9,12 @@
 #include "esp_event.h"
 #include "esp_wifi.h"
 
+static uint8_t k_MaxReconnectRetries = 6;
+
 struct WifiHelper
 {
     uint8_t m_Initialized;
+    uint8_t m_NumRetries;
     EventGroupHandle_t m_WifiEventGroup;
 };
 
