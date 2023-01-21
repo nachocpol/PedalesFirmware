@@ -1,3 +1,6 @@
+// WifiHelper.h
+//  Implements functionality to scan wifi networks and connect to a network
+
 #ifndef WIFIHELPER_H
 #define WIFIHELPER_H
 

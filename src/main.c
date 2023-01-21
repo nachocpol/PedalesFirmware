@@ -1,3 +1,5 @@
+// main.c
+
 #include "freertos/FreeRTOS.h"
 #include "driver/gpio.h"
 #include "freertos/task.h"
@@ -157,6 +159,8 @@ void Initialize()
 
 void Loop(uint64_t deltaMS)
 {
+    ESP_LOGI(k_LogTag, "Wifi connected = %i",IsConnected());
+
     // Utility code to toggle the led when the sensor is activated, this is useful to verify the sensor
     // is reading as expected. Note that the actual toggling is done thorugh an interrupt to ensure we never
     // miss it

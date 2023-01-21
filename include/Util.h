@@ -1,3 +1,6 @@
+// Util.h
+//  Implements utility methods that don't have a better place to be
+
 #ifndef UTIL_H
 #define UTIL_H
 
