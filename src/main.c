@@ -7,6 +7,8 @@
 #include "esp_wifi.h"
 #include "nvs_flash.h"
 
+#include "string.h"
+
 #include "Config.h"
 #include "Util.h"
 #include "WifiHelper.h"
@@ -109,6 +111,37 @@ void Initialize()
     }
 
     InitWifiSystem();
+
+    // Scan APs
+    AccessPointInfo apInfos[10];
+    uint16_t totalAps = 10;
+    int targetAp = -1;
+    ScanAccessPoints(apInfos, &totalAps);
+
+    // Find the one we care about
+    for(int apIndex = 0; apIndex < totalAps; ++apIndex)
+    {
+        if(strcmp(k_WifiSSID, apInfos[apIndex].m_SSID) == 0)
+        {
+            targetAp = apIndex;
+            ESP_LOGI(k_LogTag, "\t >%s [%i]<", apInfos[apIndex].m_SSID, apInfos[apIndex].m_RSSI);
+        }
+        else
+        {
+            ESP_LOGI(k_LogTag, "\t %s [%i]", apInfos[apIndex].m_SSID, apInfos[apIndex].m_RSSI);
+        }
+
+    }
+
+    // Connect to it
+    if(targetAp != -1)
+    {
+        ConnectToAccessPoint(&apInfos[targetAp], k_WifiPassword);
+    }
+    else
+    {
+        ESP_LOGI(k_LogTag, "Could not find the dessired AP...");
+    }
 
     // Configure LED pin
     gpio_set_direction(k_LedPin, GPIO_MODE_OUTPUT);
