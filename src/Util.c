@@ -22,22 +22,40 @@ uint64_t GetSystemMS()
 
 void StrToArray(const char* input, uint8_t* output, uint8_t outputMaxLen)
 {
-    if(output == NULL)
+    if(output == NULL || input == NULL)
     {
         return;
     }
-    memset(output, 0, outputMaxLen); // Reset output array
-
-    if(input == NULL)
-    {
-        return;
-    }
-
+    memset(output, 0, outputMaxLen); 
     uint8_t index = 0;
-    char* cur = (char*)input;
-    while(*cur != '0')
+    char* curChar = (char*)input;
+    while(*curChar != '\0')
     {
-        output[index++] = *cur;
-        ++cur;
+        output[index++] = *curChar;
+        if(index >= outputMaxLen)
+        {
+            return;
+        }
+        ++curChar;
+    }
+}
+
+void ArrayToStr(uint8_t* input, char* output, uint8_t outputMaxLen)
+{
+    if(output == NULL || input == NULL)
+    {
+        return;
+    }
+    memset(output, 0, outputMaxLen); 
+    uint8_t index = 0;
+    uint8_t* curVal = (uint8_t*)input;
+    while(*curVal != '\0')
+    {
+        output[index++] = (char)*curVal;
+        if(index >= outputMaxLen)
+        {
+            return;
+        }
+        ++curVal;
     }
 }
