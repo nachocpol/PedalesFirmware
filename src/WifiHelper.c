@@ -5,6 +5,7 @@
 #include "Util.h"
 
 #include "esp_log.h"
+#include "esp_smartconfig.h"
 #include "esp_wifi.h"
 
 #include "string.h"
@@ -21,9 +22,16 @@ uint8_t InitWifiSystem()
     g_WifiHelper.m_WifiEventGroup = xEventGroupCreate();
     esp_netif_create_default_wifi_sta();
     wifi_init_config_t wifiConfig = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&wifiConfig));
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    ESP_ERROR_CHECK(esp_wifi_start());
+    ESP_ERROR_CHECK( esp_wifi_init(&wifiConfig) );
+    ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
+    ESP_ERROR_CHECK( esp_wifi_start() );
+
+    // Setup smart config
+#if 0
+    ESP_ERROR_CHECK( esp_smartconfig_set_type(SC_TYPE_ESPTOUCH) );
+    smartconfig_start_config_t cfg = SMARTCONFIG_START_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK( esp_smartconfig_start(&cfg) );
+#endif
 
     g_WifiHelper.m_Initialized = 1;
 

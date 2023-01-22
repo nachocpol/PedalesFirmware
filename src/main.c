@@ -5,6 +5,7 @@
 #include "freertos/task.h"
 #include "esp_event.h"
 #include "esp_system.h"
+#include "esp_smartconfig.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
 #include "nvs_flash.h"
@@ -55,7 +56,7 @@ void app_main()
 
 static void SystemEventHandler(void* arg, esp_event_base_t eventBase, int32_t id, void* data)
 {
-    if(eventBase == WIFI_EVENT || eventBase == IP_EVENT)
+    if(eventBase == WIFI_EVENT || eventBase == IP_EVENT || eventBase == SC_EVENT)
     {
         HandleWifiEvent(eventBase, id, data);
     }
@@ -108,6 +109,12 @@ void Initialize()
         ESP_ERROR_CHECK(
             esp_event_handler_instance_register(
                 IP_EVENT, IP_EVENT_STA_GOT_IP, &SystemEventHandler, NULL, &ipEventHanlder
+            )
+        );
+        esp_event_handler_instance_t scEventHandler;
+        ESP_ERROR_CHECK(
+            esp_event_handler_instance_register(
+                SC_EVENT, ESP_EVENT_ANY_ID, &SystemEventHandler, NULL, &scEventHandler
             )
         );
     }

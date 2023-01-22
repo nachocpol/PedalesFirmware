@@ -1,0 +1,39 @@
+====================
+Raspberry setup
+====================
+-- Hardware: PI 3 Model A+
+-- Micro Sd
+====================
+
+1) Download imager from https://www.raspberrypi.com/software/
+2) Follow steps in https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up/2
+3) Install Raspberry PI os 32bit
+4) Wait..
+5) Once done, insert card into the raspberry
+6) Connect your keyboard and mouse (I had to use a usb spliter as the PI3 only has one USB port)
+7) Connect the HDMI cable
+8) Connect power...
+9) You should now see the OS starting up
+10) Configure the PI
+11) Create a default user and password for the pi
+12) Connected to the local Wifi
+13) Once connected, do a system update, this can take a few minutes
+14) Will ask for a re-start. Go ahead
+15) Run on a terminal
+	-> sudo apt update
+	-> sudo apt upgrade
+This shouldn't do anything as we already installed it during the OS setup, but better be sure
+16) Lets go ahead and setup a remote desktop connection
+17) Get device IP
+	-> hostname -I
+Make a note of this IP
+18) Install the remote host software
+	-> sudo apt install xrdp
+19) Once this is done, the software should be good to go
+20) However, we need to add a new user to connect remotely (for whatever reason, the root user can't be used to connect)
+	-> sudo adduser <remoteUsername>
+Follow the steps. 
+21) Can verify from a windows PC using remote desktop
+	Connect using the <remoteUsername> and password and providing the IP
+Keep in mind that if you also have the HDMI connected at the same time this will be super slow.
+Another thing to remember, you can (and should) reduce the resolution of the RDC windows client (I have 4k monitors, and defaults to that size) to ensure good connection quality.  Also, you can reduce the color quality (I have it at the lowest)
