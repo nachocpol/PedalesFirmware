@@ -16,4 +16,18 @@ void StrToArray(const char* input, uint8_t* output, uint8_t outputMaxLen);
 
 void ArrayToStr(uint8_t* input, char* output, uint8_t outputMaxLen);
 
+typedef struct
+{
+    const char* m_MAC;
+    int32_t m_ActivityIndex;
+    int32_t m_Revolutions;
+    float m_TotalDistance;
+    float m_Speed;
+}InfluxData;
+void BuildInfluxPacket(InfluxData data, char* outputData, uint32_t outputMaxSize);
+
+// Used to return incrementing indices. Values stored in NVS so values increase every
+// time we call this method
+int32_t GetNextUniqueIndex();
+
 #endif

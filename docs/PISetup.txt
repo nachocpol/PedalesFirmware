@@ -29,37 +29,38 @@ PI3 Model a+ (supports 64bit)
 InfluxDB
 =========================
 
-1) Setup influxdb key and repo
+1) Instalar la key y el repositorio
 
 wget -qO- https://repos.influxdata.com/influxdb.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdb.gpg > /dev/null
 export DISTRIB_ID=$(lsb_release -si); export DISTRIB_CODENAME=$(lsb_release -sc)
 echo "deb [signed-by=/etc/apt/trusted.gpg.d/influxdb.gpg] https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stable" | sudo tee /etc/apt/sources.list.d/influxdb.list > /dev/null
 
 
-2) Get and install
+2) Get e instalar
 
 sudo apt-get update && sudo apt-get install influxdb2
 
-3) Go! This will ensure the service starts on reboot
+3) Empezamos el servicio
 
 	sudo service influxdb start
 
-4) We can verify by doing:
+4) Para verificar que esta funcionando
 
 	sudo service influxdb status
 
-5) From the remote PC we can navigate to
+5) Desde un PC conectado a la misma red que la raspberry, podemos acceder a la interfaz de Influx
 
 	http://<IP>:8086/
 
-6) Lets setup InfluxDB now
+6) Vamos a configurarla. 
 	- Create username -> influxpi
 	- Password        -> influxpi
 	- Org		  -> pedalesOrg
 	- Bucket	  -> pedales
 
-7) Done, the InfluxDB is up and running ready to recieve connections
+La ORG y el BUCKET tienen que estar asi ya que el firmware de los ESP enviara datos
+usando estos valores
 
+8) Vamos a hacer un API Token (en la barra de la izquierda, la flecha debajo de la "p" -> API Tokens)
 
-
-
+Nos apuntamos este token ya que nos hara falta pasarselo a la Raspberry mas adelante

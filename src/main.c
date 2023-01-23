@@ -8,6 +8,7 @@
 #include "esp_smartconfig.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
+#include "esp_mac.h"
 #include "nvs_flash.h"
 
 #include "string.h"
@@ -15,15 +16,19 @@
 #include "Config.h"
 #include "Util.h"
 #include "WifiHelper.h"
+#include "HTTPHelper.h"
 
 // Will hold the active state of the activity we are monitoring
 struct State
 {
     bool m_ActivityInProgress;
+    float m_ActivityLastTotalDistance; // To calculate speed
     int32_t m_TotalRevolutions;
     uint64_t m_InitialDetection;
     uint64_t m_LastTimeStampMS;
     int64_t m_PacketTimerMS;
+    char m_MacStr[30];
+    int32_t m_ActivityIndex;
 } g_State;
 
 // Sensor interrup will toggle this
@@ -79,6 +84,8 @@ void ResetState()
     g_State.m_TotalRevolutions = 0;
     g_State.m_InitialDetection = 0;
     g_State.m_PacketTimerMS = 0;
+    g_State.m_ActivityLastTotalDistance = 0.0f;
+    g_State.m_ActivityIndex = -1;
 }
 
 void Initialize()
@@ -117,6 +124,17 @@ void Initialize()
                 SC_EVENT, ESP_EVENT_ANY_ID, &SystemEventHandler, NULL, &scEventHandler
             )
         );
+    }
+
+    // Retrieve unique MAC for this ESP (used as UID)
+    {
+        uint8_t macRaw[20];
+        esp_efuse_mac_get_default(macRaw);
+        sprintf(
+            g_State.m_MacStr, "%i%i%i%i%i%i",
+            macRaw[0], macRaw[1], macRaw[2], macRaw[3], macRaw[4], macRaw[5]
+        );
+        ESP_LOGI(k_LogTag, "Device UID: %s", g_State.m_MacStr);
     }
 
     InitWifiSystem();
@@ -158,6 +176,8 @@ void Initialize()
     // Configure sensor pin (used as interrupt source)
     gpio_set_direction(k_SensorPin, GPIO_MODE_INPUT);
     gpio_set_intr_type(k_SensorPin, GPIO_INTR_NEGEDGE); // Interrup on lowering edge
+    gpio_set_pull_mode(k_SensorPin, GPIO_PULLUP_ONLY);
+    gpio_pullup_en(k_SensorPin);
     gpio_isr_handler_add(k_SensorPin,SensorInterruptHandler, NULL);
 
     // Ensure we have a clean state before starting
@@ -166,8 +186,6 @@ void Initialize()
 
 void Loop(uint64_t deltaMS)
 {
-    ESP_LOGI(k_LogTag, "Wifi connected = %i",IsConnected());
-
     // Utility code to toggle the led when the sensor is activated, this is useful to verify the sensor
     // is reading as expected. Note that the actual toggling is done thorugh an interrupt to ensure we never
     // miss it
@@ -210,6 +228,7 @@ void Loop(uint64_t deltaMS)
              && elapsedSinceTentative <= k_TimeBeforeStart)
         {
             g_State.m_ActivityInProgress = true;
+            g_State.m_ActivityIndex = GetNextUniqueIndex();
             ESP_LOGI(k_LogTag, "[%llu] Activity is now fully in progress", currentTime);
         }
         else if(elapsedSinceTentative > k_TimeBeforeStart && g_State.m_InitialDetection > 0u)
@@ -239,8 +258,35 @@ void Loop(uint64_t deltaMS)
         if(g_State.m_PacketTimerMS >= k_SendPacketDelta)
         {
             g_State.m_PacketTimerMS = 0;
-            float totalDistance = (float)g_State.m_TotalRevolutions * k_RevCircumference;
-            ESP_LOGI(k_LogTag, "[%llu] Packet: %li, %f m.", currentTime, g_State.m_TotalRevolutions, totalDistance);
+
+            if(IsConnected() == 1)
+            {
+                // Distance calculations
+                const float totalDistance = (float)g_State.m_TotalRevolutions * k_RevCircumference;
+                const float deltaDistance = totalDistance - g_State.m_ActivityLastTotalDistance;
+                g_State.m_ActivityLastTotalDistance = totalDistance;
+
+                // Speed based on packet delta time.
+                const float speed = deltaDistance / ((float)k_SendPacketDelta / 1000.0f);
+
+                InfluxData packetData = {
+                    .m_ActivityIndex = g_State.m_ActivityIndex,
+                    .m_MAC = g_State.m_MacStr,
+                    .m_Revolutions = g_State.m_TotalRevolutions,
+                    .m_TotalDistance = totalDistance,
+                    .m_Speed = speed,
+                };
+                
+                char influxMsg[250];
+                BuildInfluxPacket(packetData, influxMsg, 250);
+
+                // Send the HTTP post to the database
+                PostInfluxDBMessage(influxMsg);
+            }
+            else
+            {
+                ESP_LOGI(k_LogTag, "Could not send packet becase we are not connected...");
+            }
         }
     }
 }
