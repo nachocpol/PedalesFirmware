@@ -145,6 +145,8 @@ void Initialize()
     int targetAp = -1;
     ScanAccessPoints(apInfos, &totalAps);
 
+    ESP_LOGI(k_LogTag, "Looking for AP: %s" , k_WifiSSID);
+
     // Find the one we care about
     for(int apIndex = 0; apIndex < totalAps; ++apIndex)
     {
@@ -182,6 +184,16 @@ void Initialize()
 
     // Ensure we have a clean state before starting
     ResetState();
+
+    // Ensure we are connected to the wifi before doing anything else
+    {
+        while(IsConnected() == 0)
+        {
+            gpio_set_level(k_LedPin, 1);
+            Delay(20);
+        }
+        gpio_set_level(k_LedPin, 0);
+    }
 }
 
 void Loop(uint64_t deltaMS)

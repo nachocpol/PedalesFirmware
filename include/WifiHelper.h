@@ -12,7 +12,7 @@
 #include "esp_event.h"
 #include "esp_wifi.h"
 
-static uint8_t k_MaxReconnectRetries = 6;
+static uint8_t k_MaxReconnectRetries = 30;
 
 struct WifiHelper
 {
