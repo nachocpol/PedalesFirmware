@@ -46,7 +46,12 @@ void ScanAccessPoints(AccessPointInfo* accessPoints, uint16_t* maxAccessPoints)
         return;
     }
 
-    esp_wifi_scan_start(NULL, true);
+    // Enable search of hidden SSIDs
+    wifi_scan_config_t scanConfig = {0};
+    scanConfig.show_hidden = 1;
+    scanConfig.scan_type = WIFI_SCAN_TYPE_PASSIVE;
+    esp_wifi_scan_start(&scanConfig, true);
+
     wifi_ap_record_t scannedAccessPoints[12];
     uint16_t totalAccessPoints = 12;
     ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&totalAccessPoints, scannedAccessPoints));

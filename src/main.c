@@ -129,7 +129,17 @@ void Initialize()
     // Retrieve unique MAC for this ESP (used as UID)
     {
         uint8_t macRaw[20];
+    #if 0
+        // To test with a different MAC on my grafana setup
+        macRaw[0] = 5;
+        macRaw[1] = 4;
+        macRaw[2] = 3;
+        macRaw[3] = 2;
+        macRaw[4] = 1;
+        macRaw[5] = 0;
+    #else
         esp_efuse_mac_get_default(macRaw);
+    #endif
         sprintf(
             g_State.m_MacStr, "%i%i%i%i%i%i",
             macRaw[0], macRaw[1], macRaw[2], macRaw[3], macRaw[4], macRaw[5]
