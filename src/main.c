@@ -91,6 +91,7 @@ void ResetState()
 void Initialize()
 {
     ESP_LOGI(k_LogTag, "Initializing...");
+    ESP_LOGI(k_LogTag, "Version: %s", k_VersionStr);
 
     // Need to install this service before adding any interrupt handlers to the GPIOs
     gpio_install_isr_service(0);
