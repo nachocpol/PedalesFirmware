@@ -8,7 +8,7 @@
 #include "driver/gpio.h"
 
 // General settings
-static const char* k_VersionStr = "1_2";
+static const char* k_VersionStr = "1_3";
 static const char* k_LogTag = "Firmware";
 static const gpio_num_t k_LedPin = GPIO_NUM_2;
 static const gpio_num_t k_SensorPin = GPIO_NUM_4;
