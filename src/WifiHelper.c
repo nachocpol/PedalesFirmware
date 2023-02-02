@@ -88,7 +88,7 @@ void ConnectToAccessPoint(AccessPointInfo* info, const char* password)
 
     wifi_config_t staConfig = {
         .sta = {
-            .threshold.authmode = WIFI_AUTH_WPA_WPA2_PSK,
+            .threshold.authmode = info->m_AuthMode,
             .sae_pwe_h2e = WPA3_SAE_PWE_BOTH,
         },
     };
